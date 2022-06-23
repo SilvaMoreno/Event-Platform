@@ -1,20 +1,66 @@
-import { DefaultUi, Player, Youtube } from "@vime/react";
+import { Player, DefaultUi, Youtube } from "@vime/react";
 import {
   CaretRight,
   DiscordLogo,
   FileArrowDown,
   Lightning,
 } from "phosphor-react";
+import { gql, useQuery } from "@apollo/client";
 
 import "@vime/core/themes/default.css";
 
-export function Video() {
+interface VideoProps {
+  lessonSlug: string;
+}
+
+const GET_LESSON_BY_SLUG = gql`
+  query GetLessonBySlug($slug: String) {
+    lesson(where: { slug: $slug }) {
+      title
+      videoId
+      description
+      teacher {
+        avatarURL
+        name
+        bio
+      }
+    }
+  }
+`;
+
+interface GetLessonBySlugResponse {
+  lesson: {
+    title: string;
+    videoId: string;
+    description: string;
+    teacher: {
+      avatarURL: string;
+      name: string;
+      bio: string;
+    };
+  };
+}
+export function Video({ lessonSlug }: VideoProps) {
+  const { data } = useQuery<GetLessonBySlugResponse>(GET_LESSON_BY_SLUG, {
+    variables: {
+      slug: lessonSlug,
+    },
+  });
+
+  if (!data) {
+    return (
+      <div className="flex-1">
+        <p>Loading ....</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1">
       <div className="bg-black flex justify-center">
         <div className="h-full w-full max-w-[1100px] max-h-[60vh] aspect-video">
           <Player>
-            <Youtube videoId="cUT665tW4v8" />
+            <Youtube videoId={data.lesson.videoId} />
             <DefaultUi />
           </Player>
         </div>
@@ -23,26 +69,25 @@ export function Video() {
       <div className="p-8 max-w-[1100px] mx-auto">
         <div className="flex items-start gap-16">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">Aula - 1 abertura</h1>
+            <h1 className="text-2xl font-bold">{data.lesson.title}</h1>
             <p className="mt-4 text-gray-200 leading-relaxed">
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              Accusantium dicta ab nam consequuntur explicabo odio, tempore
-              maiores dolorem, hic cupiditate iusto autem esse, impedit
-              voluptates odit quis. Tempore, porro doloremque.
+              {data.lesson.description}
             </p>
 
-            <div className="flex items-center gap-4 mt-6">
+            <div className="flex items-start gap-4 mt-6">
               <img
                 className="h-16 w-16 rounded-full border-2 border-blue-500"
-                src="https://avatars.githubusercontent.com/u/17097140?v=4"
+                src={data.lesson.teacher.avatarURL}
                 alt="Photo"
               />
 
               <div className="leading-relaxed">
                 <strong className="font-bold text-2xl block">
-                  Elton Moreno
+                  {data.lesson.teacher.name}
                 </strong>
-                <span className="text-gray-200 text-sm block">CTO eRoom</span>
+                <span className="text-gray-200 text-sm block">
+                  {data.lesson.teacher.bio}
+                </span>
               </div>
             </div>
           </div>
@@ -74,7 +119,7 @@ export function Video() {
               <FileArrowDown size={40} />
             </div>
             <div className="py-6 leading-relaxed">
-              <strong className="text-2xl">Complementary material</strong>
+              <strong className="text-xl">Complementary material</strong>
               <p className="text-sm text-gray-200 mt-2">
                 Access supplemental material to accelerate your development
               </p>
@@ -93,7 +138,7 @@ export function Video() {
               <FileArrowDown size={40} />
             </div>
             <div className="py-6 leading-relaxed">
-              <strong className="text-2xl">Exclusive wallpapers</strong>
+              <strong className="text-xl">Exclusive wallpapers</strong>
               <p className="text-sm text-gray-200 mt-2">
                 Download exclusive wallpapers and customize your device
               </p>
