@@ -20,16 +20,16 @@ export function Lesson({ title, availableAt, type }: LessonProps) {
           {isLessonAvailable ? (
             <span className="text-sm text-blue-500 font-medium flex items-center gap-2">
               <CheckCircle size={20} />
-              Conteúdo liberado
+              Released content
             </span>
           ) : (
             <span className="text-sm text-orange-500 font-medium flex items-center gap-2">
               <Lock size={20} />
-              Em breve
+              Come soon
             </span>
           )}
           <span className="text-xs rounded px-2 py-[0.125rem] text-white border border-green-300 font-bold uppercase">
-            {type === "live" ? "ao vivo" : "aula prática"}
+            {type === "live" ? "Live" : "Practical"}
           </span>
         </header>
 
