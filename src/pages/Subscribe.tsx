@@ -1,8 +1,10 @@
 import { gql, useMutation } from "@apollo/client";
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Logo } from "../Components/Logo";
 import { useCreateSubscriberMutation } from "../graphql/generated";
+
+import Code_Mockup from "../assets/code_mockup.png";
 
 export function Subscribe() {
   const navigate = useNavigate();
@@ -10,19 +12,36 @@ export function Subscribe() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
+  useEffect(() => {
+    const uid = localStorage.getItem("uid");
+
+    if (uid) {
+      navigate("/event");
+    }
+  });
+
   const [createSubscribe, { loading }] = useCreateSubscriberMutation();
 
   async function handleSubscribe(event: FormEvent) {
     event.preventDefault();
 
-    await createSubscribe({
-      variables: {
-        name,
-        email,
-      },
-    });
+    try {
+      const { data, errors } = await createSubscribe({
+        variables: {
+          name,
+          email,
+        },
+        onError() {
+          alert("Something wrong");
+        },
+      });
 
-    navigate("/event");
+      if (data?.createSubscriber?.id) {
+        localStorage.setItem("uid", data?.createSubscriber?.id || "");
+
+        navigate("/event");
+      }
+    } catch (error) {}
   }
 
   return (
@@ -72,7 +91,7 @@ export function Subscribe() {
           </form>
         </div>
       </div>
-      <img src="/src/assets/code_mockup.png" className="mt-10" alt="Image" />
+      <img src={Code_Mockup} className="mt-10" alt="Image" />
     </div>
   );
 }
